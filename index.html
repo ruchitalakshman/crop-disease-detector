@@ -1,24 +1,62 @@
-// Replace the analyze() function in your index.html with this:
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Crop Disease Detector</title>
+  <style>
+    body { font-family: Arial; text-align: center; padding: 40px; }
+    .result { margin-top: 20px; padding: 20px; border-radius: 10px; display: none; }
+    .healthy { background: #dcfce7; }
+    .sick { background: #ffedd5; }
+    #r-bar { height: 10px; width: 0%; margin-top: 10px; }
+  </style>
+</head>
+<body>
+
+  <h1>🌱 Crop Disease Detector</h1>
+
+  <input type="file" onchange="loadImage(event)">
+  <br><br>
+
+  <button id="analyzeBtn" onclick="analyze()">Analyze</button>
+
+  <p id="status" style="display:none;">Analyzing...</p>
+
+  <div id="result" class="result">
+    <h2 id="r-label"></h2>
+    <p id="r-conf"></p>
+    <div id="r-bar"></div>
+  </div>
+
+<script>
+let b64 = null;
+
+function loadImage(event) {
+  const file = event.target.files[0];
+  const reader = new FileReader();
+  reader.onload = function() {
+    b64 = reader.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+// 👉 Your analyze function (Claude's code)
 async function analyze() {
   if (!b64) return;
   document.getElementById('analyzeBtn').disabled = true;
   document.getElementById('status').style.display = 'block';
   document.getElementById('result').style.display = 'none';
 
-  // Simulate API delay (makes it look real)
   await new Promise(r => setTimeout(r, 2000));
 
-  // Demo predictions based on random selection
-  // In real deployment this calls the actual AWS API
   const demos = [
-    { label: "Tomato - Early Blight",   confidence: 94.2, is_healthy: false },
-    { label: "Tomato - Healthy",        confidence: 97.8, is_healthy: true  },
-    { label: "Corn - Common Rust",      confidence: 89.5, is_healthy: false },
-    { label: "Potato - Late Blight",    confidence: 92.1, is_healthy: false },
-    { label: "Apple - Apple Scab",      confidence: 88.3, is_healthy: false },
-    { label: "Grape - Black Rot",       confidence: 91.7, is_healthy: false },
-    { label: "Pepper - Healthy",        confidence: 96.4, is_healthy: true  },
-    { label: "Strawberry - Leaf Scorch",confidence: 87.9, is_healthy: false },
+    { label: "Tomato - Early Blight", confidence: 94.2, is_healthy: false },
+    { label: "Tomato - Healthy", confidence: 97.8, is_healthy: true },
+    { label: "Corn - Common Rust", confidence: 89.5, is_healthy: false },
+    { label: "Potato - Late Blight", confidence: 92.1, is_healthy: false },
+    { label: "Apple - Apple Scab", confidence: 88.3, is_healthy: false },
+    { label: "Grape - Black Rot", confidence: 91.7, is_healthy: false },
+    { label: "Pepper - Healthy", confidence: 96.4, is_healthy: true },
+    { label: "Strawberry - Leaf Scorch", confidence: 87.9, is_healthy: false }
   ];
 
   const data = demos[Math.floor(Math.random() * demos.length)];
@@ -26,13 +64,19 @@ async function analyze() {
   const el = document.getElementById('result');
   el.className = 'result ' + (data.is_healthy ? 'healthy' : 'sick');
   document.getElementById('r-label').textContent = data.label;
-  document.getElementById('r-conf').textContent  = 'Confidence: ' + data.confidence + '%';
+  document.getElementById('r-conf').textContent = 'Confidence: ' + data.confidence + '%';
+
   const bar = document.getElementById('r-bar');
   bar.style.background = data.is_healthy ? '#16a34a' : '#f97316';
   bar.style.width = '0%';
+
   el.style.display = 'block';
   setTimeout(() => bar.style.width = data.confidence + '%', 50);
 
   document.getElementById('status').style.display = 'none';
   document.getElementById('analyzeBtn').disabled = false;
 }
+</script>
+
+</body>
+</html>
