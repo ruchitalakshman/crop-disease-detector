@@ -1,181 +1,113 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Crop Disease Detector</title>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: 'Segoe UI', sans-serif;
-    }
-
-    body {
-      background: linear-gradient(135deg, #d1fae5, #e0f2fe);
-      height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-
-    .container {
-      background: white;
-      padding: 30px;
-      border-radius: 20px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-      width: 350px;
-      text-align: center;
-      animation: fadeIn 0.6s ease;
-    }
-
-    h1 {
-      margin-bottom: 20px;
-      color: #065f46;
-    }
-
-    input[type="file"] {
-      margin: 15px 0;
-    }
-
-    button {
-      background: #16a34a;
-      color: white;
-      border: none;
-      padding: 12px 20px;
-      border-radius: 10px;
-      cursor: pointer;
-      font-size: 16px;
-      transition: 0.3s;
-    }
-
-    button:hover {
-      background: #15803d;
-      transform: scale(1.05);
-    }
-
-    #status {
-      margin-top: 15px;
-      font-weight: bold;
-      color: #2563eb;
-    }
-
-    .result {
-      margin-top: 20px;
-      padding: 20px;
-      border-radius: 15px;
-      display: none;
-      transition: 0.3s;
-    }
-
-    .healthy {
-      background: #dcfce7;
-      border: 2px solid #16a34a;
-    }
-
-    .sick {
-      background: #ffedd5;
-      border: 2px solid #f97316;
-    }
-
-    #r-label {
-      margin-bottom: 10px;
-    }
-
-    .bar-container {
-      width: 100%;
-      height: 10px;
-      background: #e5e7eb;
-      border-radius: 10px;
-      overflow: hidden;
-      margin-top: 10px;
-    }
-
-    #r-bar {
-      height: 100%;
-      width: 0%;
-      transition: width 1s ease;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AI Crop Disease Detector</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Segoe UI',sans-serif;background:linear-gradient(135deg,#f0fdf4,#dcfce7);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+  .card{background:#fff;border-radius:24px;padding:40px;max-width:480px;width:100%;box-shadow:0 8px 40px rgba(0,0,0,0.10)}
+  .logo{font-size:36px;margin-bottom:8px}
+  h1{font-size:22px;font-weight:700;color:#14532d}
+  .sub{font-size:13px;color:#6b7280;margin:4px 0 28px}
+  .upload-box{border:2px dashed #86efac;border-radius:14px;padding:30px;text-align:center;cursor:pointer;transition:all 0.2s;background:#f9fffe}
+  .upload-box:hover{background:#f0fdf4;border-color:#4ade80}
+  .upload-box svg{margin-bottom:8px}
+  .upload-box p{font-size:13px;color:#9ca3af}
+  #fileInput{display:none}
+  #preview{width:100%;border-radius:12px;margin-top:16px;display:none;max-height:260px;object-fit:cover;border:1px solid #e5e7eb}
+  .btn{width:100%;margin-top:16px;padding:14px;background:#16a34a;color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;transition:background 0.2s}
+  .btn:hover{background:#15803d}
+  .btn:disabled{background:#d1d5db;cursor:not-allowed}
+  #status{text-align:center;font-size:13px;color:#6b7280;margin-top:12px;display:none}
+  .spinner{display:inline-block;width:14px;height:14px;border:2px solid #d1d5db;border-top-color:#16a34a;border-radius:50%;animation:spin 0.7s linear infinite;margin-right:6px;vertical-align:middle}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .result{margin-top:20px;border-radius:14px;padding:20px;display:none}
+  .result.healthy{background:#f0fdf4;border:1.5px solid #86efac}
+  .result.sick{background:#fff7ed;border:1.5px solid #fed7aa}
+  .res-tag{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:#6b7280;margin-bottom:6px}
+  .res-label{font-size:20px;font-weight:700;color:#14532d}
+  .res-conf{font-size:13px;color:#9ca3af;margin-top:6px}
+  .bar-wrap{height:7px;background:#e5e7eb;border-radius:4px;margin-top:10px;overflow:hidden}
+  .bar-fill{height:100%;border-radius:4px;transition:width 0.7s ease}
+  .footer{margin-top:24px;text-align:center;font-size:11px;color:#d1d5db}
+</style>
 </head>
-
 <body>
+<div class="card">
+  <div class="logo">🌿</div>
+  <h1>AI Crop Disease Detector</h1>
+  <p class="sub">Powered by Amazon SageMaker + S3 — Cloud Computing Project</p>
 
-<div class="container">
-  <h1>🌱 Crop AI</h1>
-
-  <input type="file" onchange="loadImage(event)">
-  <br>
-
-  <button id="analyzeBtn" onclick="analyze()">Analyze</button>
-
-  <p id="status" style="display:none;">🔍 Analyzing image...</p>
-
-  <div id="result" class="result">
-    <h2 id="r-label"></h2>
-    <p id="r-conf"></p>
-
-    <div class="bar-container">
-      <div id="r-bar"></div>
-    </div>
+  <div class="upload-box" onclick="document.getElementById('fileInput').click()">
+    <input type="file" id="fileInput" accept="image/*" onchange="handleFile(event)">
+    <svg width="36" height="36" fill="none" viewBox="0 0 24 24" stroke="#86efac" stroke-width="1.5">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/>
+    </svg>
+    <p>Click to upload a crop leaf image</p>
   </div>
+
+  <img id="preview" alt="Leaf preview">
+  <button class="btn" id="analyzeBtn" onclick="analyze()" disabled>Analyze Leaf Disease</button>
+  <div id="status"><span class="spinner"></span>Sending to SageMaker for analysis...</div>
+
+  <div class="result" id="result">
+    <div class="res-tag">Detection Result</div>
+    <div class="res-label" id="r-label"></div>
+    <div class="res-conf" id="r-conf"></div>
+    <div class="bar-wrap"><div class="bar-fill" id="r-bar"></div></div>
+  </div>
+
+  <div class="footer">AWS SageMaker · Amazon S3 · API Gateway · Lambda</div>
 </div>
 
 <script>
-let b64 = null;
+  const API = "https://d12fmdgnuk.execute-api.us-east-1.amazonaws.com/prod/predict";  // <-- replace this
+  let b64 = null;
 
-function loadImage(event) {
-  const file = event.target.files[0];
-  const reader = new FileReader();
-  reader.onload = function() {
-    b64 = reader.result;
-  };
-  reader.readAsDataURL(file);
-}
+  function handleFile(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      document.getElementById('preview').src = ev.target.result;
+      document.getElementById('preview').style.display = 'block';
+      b64 = ev.target.result.split(',')[1];
+      document.getElementById('analyzeBtn').disabled = false;
+      document.getElementById('result').style.display = 'none';
+    };
+    reader.readAsDataURL(file);
+  }
 
-async function analyze() {
-  if (!b64) return;
-
-  document.getElementById('analyzeBtn').disabled = true;
-  document.getElementById('status').style.display = 'block';
-  document.getElementById('result').style.display = 'none';
-
-  await new Promise(r => setTimeout(r, 2000));
-
-  const demos = [
-    { label: "Tomato - Early Blight", confidence: 94.2, is_healthy: false },
-    { label: "Tomato - Healthy", confidence: 97.8, is_healthy: true },
-    { label: "Corn - Common Rust", confidence: 89.5, is_healthy: false },
-    { label: "Potato - Late Blight", confidence: 92.1, is_healthy: false },
-    { label: "Apple - Apple Scab", confidence: 88.3, is_healthy: false },
-    { label: "Grape - Black Rot", confidence: 91.7, is_healthy: false },
-    { label: "Pepper - Healthy", confidence: 96.4, is_healthy: true },
-    { label: "Strawberry - Leaf Scorch", confidence: 87.9, is_healthy: false }
-  ];
-
-  const data = demos[Math.floor(Math.random() * demos.length)];
-
-  const el = document.getElementById('result');
-  el.className = 'result ' + (data.is_healthy ? 'healthy' : 'sick');
-
-  document.getElementById('r-label').textContent = data.label;
-  document.getElementById('r-conf').textContent = 'Confidence: ' + data.confidence + '%';
-
-  const bar = document.getElementById('r-bar');
-  bar.style.background = data.is_healthy ? '#16a34a' : '#f97316';
-  bar.style.width = '0%';
-
-  el.style.display = 'block';
-  setTimeout(() => bar.style.width = data.confidence + '%', 100);
-
-  document.getElementById('status').style.display = 'none';
-  document.getElementById('analyzeBtn').disabled = false;
-}
+  async function analyze() {
+    if (!b64) return;
+    document.getElementById('analyzeBtn').disabled = true;
+    document.getElementById('status').style.display = 'block';
+    document.getElementById('result').style.display = 'none';
+    try {
+      const res  = await fetch(API, {
+        method:  'POST',
+        headers: {'Content-Type':'application/json'},
+        body:    JSON.stringify({image: b64})
+      });
+      const data = await res.json();
+      const el   = document.getElementById('result');
+      el.className = 'result ' + (data.is_healthy ? 'healthy' : 'sick');
+      document.getElementById('r-label').textContent = data.label;
+      document.getElementById('r-conf').textContent  = 'Confidence: ' + data.confidence + '%';
+      const bar = document.getElementById('r-bar');
+      bar.style.background = data.is_healthy ? '#16a34a' : '#f97316';
+      bar.style.width = '0%';
+      el.style.display = 'block';
+      setTimeout(() => bar.style.width = data.confidence + '%', 50);
+    } catch(err) {
+      alert('Error calling API: ' + err.message);
+    } finally {
+      document.getElementById('status').style.display = 'none';
+      document.getElementById('analyzeBtn').disabled = false;
+    }
+  }
 </script>
-
 </body>
 </html>
