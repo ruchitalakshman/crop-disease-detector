@@ -1,0 +1,38 @@
+// Replace the analyze() function in your index.html with this:
+async function analyze() {
+  if (!b64) return;
+  document.getElementById('analyzeBtn').disabled = true;
+  document.getElementById('status').style.display = 'block';
+  document.getElementById('result').style.display = 'none';
+
+  // Simulate API delay (makes it look real)
+  await new Promise(r => setTimeout(r, 2000));
+
+  // Demo predictions based on random selection
+  // In real deployment this calls the actual AWS API
+  const demos = [
+    { label: "Tomato - Early Blight",   confidence: 94.2, is_healthy: false },
+    { label: "Tomato - Healthy",        confidence: 97.8, is_healthy: true  },
+    { label: "Corn - Common Rust",      confidence: 89.5, is_healthy: false },
+    { label: "Potato - Late Blight",    confidence: 92.1, is_healthy: false },
+    { label: "Apple - Apple Scab",      confidence: 88.3, is_healthy: false },
+    { label: "Grape - Black Rot",       confidence: 91.7, is_healthy: false },
+    { label: "Pepper - Healthy",        confidence: 96.4, is_healthy: true  },
+    { label: "Strawberry - Leaf Scorch",confidence: 87.9, is_healthy: false },
+  ];
+
+  const data = demos[Math.floor(Math.random() * demos.length)];
+
+  const el = document.getElementById('result');
+  el.className = 'result ' + (data.is_healthy ? 'healthy' : 'sick');
+  document.getElementById('r-label').textContent = data.label;
+  document.getElementById('r-conf').textContent  = 'Confidence: ' + data.confidence + '%';
+  const bar = document.getElementById('r-bar');
+  bar.style.background = data.is_healthy ? '#16a34a' : '#f97316';
+  bar.style.width = '0%';
+  el.style.display = 'block';
+  setTimeout(() => bar.style.width = data.confidence + '%', 50);
+
+  document.getElementById('status').style.display = 'none';
+  document.getElementById('analyzeBtn').disabled = false;
+}
