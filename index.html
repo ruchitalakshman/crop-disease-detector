@@ -3,29 +3,127 @@
 <head>
   <title>Crop Disease Detector</title>
   <style>
-    body { font-family: Arial; text-align: center; padding: 40px; }
-    .result { margin-top: 20px; padding: 20px; border-radius: 10px; display: none; }
-    .healthy { background: #dcfce7; }
-    .sick { background: #ffedd5; }
-    #r-bar { height: 10px; width: 0%; margin-top: 10px; }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    body {
+      background: linear-gradient(135deg, #d1fae5, #e0f2fe);
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      width: 350px;
+      text-align: center;
+      animation: fadeIn 0.6s ease;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+      color: #065f46;
+    }
+
+    input[type="file"] {
+      margin: 15px 0;
+    }
+
+    button {
+      background: #16a34a;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background: #15803d;
+      transform: scale(1.05);
+    }
+
+    #status {
+      margin-top: 15px;
+      font-weight: bold;
+      color: #2563eb;
+    }
+
+    .result {
+      margin-top: 20px;
+      padding: 20px;
+      border-radius: 15px;
+      display: none;
+      transition: 0.3s;
+    }
+
+    .healthy {
+      background: #dcfce7;
+      border: 2px solid #16a34a;
+    }
+
+    .sick {
+      background: #ffedd5;
+      border: 2px solid #f97316;
+    }
+
+    #r-label {
+      margin-bottom: 10px;
+    }
+
+    .bar-container {
+      width: 100%;
+      height: 10px;
+      background: #e5e7eb;
+      border-radius: 10px;
+      overflow: hidden;
+      margin-top: 10px;
+    }
+
+    #r-bar {
+      height: 100%;
+      width: 0%;
+      transition: width 1s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
   </style>
 </head>
+
 <body>
 
-  <h1>🌱 Crop Disease Detector</h1>
+<div class="container">
+  <h1>🌱 Crop AI</h1>
 
   <input type="file" onchange="loadImage(event)">
-  <br><br>
+  <br>
 
   <button id="analyzeBtn" onclick="analyze()">Analyze</button>
 
-  <p id="status" style="display:none;">Analyzing...</p>
+  <p id="status" style="display:none;">🔍 Analyzing image...</p>
 
   <div id="result" class="result">
     <h2 id="r-label"></h2>
     <p id="r-conf"></p>
-    <div id="r-bar"></div>
+
+    <div class="bar-container">
+      <div id="r-bar"></div>
+    </div>
   </div>
+</div>
 
 <script>
 let b64 = null;
@@ -39,9 +137,9 @@ function loadImage(event) {
   reader.readAsDataURL(file);
 }
 
-// 👉 Your analyze function (Claude's code)
 async function analyze() {
   if (!b64) return;
+
   document.getElementById('analyzeBtn').disabled = true;
   document.getElementById('status').style.display = 'block';
   document.getElementById('result').style.display = 'none';
@@ -63,6 +161,7 @@ async function analyze() {
 
   const el = document.getElementById('result');
   el.className = 'result ' + (data.is_healthy ? 'healthy' : 'sick');
+
   document.getElementById('r-label').textContent = data.label;
   document.getElementById('r-conf').textContent = 'Confidence: ' + data.confidence + '%';
 
@@ -71,7 +170,7 @@ async function analyze() {
   bar.style.width = '0%';
 
   el.style.display = 'block';
-  setTimeout(() => bar.style.width = data.confidence + '%', 50);
+  setTimeout(() => bar.style.width = data.confidence + '%', 100);
 
   document.getElementById('status').style.display = 'none';
   document.getElementById('analyzeBtn').disabled = false;
